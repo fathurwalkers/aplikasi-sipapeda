@@ -49,8 +49,14 @@ Route::prefix('/home')->group(function () {
 Route::get('/administrator', 'AdminController@indexdua')->name('administrator');
 Route::prefix('/admin')->group(function () {
     Route::get('/', 'AdminController@index');
+    Route::post('/login/request-login', 'AdminController@request_login')->name('request-login');
     Route::get('/login', 'AdminController@login')->name('login');
-    Route::post('/login', 'AdminController@postlogin');
+    Route::get('/login/post-login', 'AdminController@postlogin')->name('post-login');
+
+    Route::post('/verifikasi-otp', 'AdminController@proses_otp')->name('proses-otp');
+    Route::get('/halaman-verifikasi', 'AdminController@halaman_verifikasi')->name('halaman-verifikasi');
+
+
     Route::get('/register', 'AdminController@register')->name('register');
     Route::post('/register', 'AdminController@postregister')->name('post-register');
     Route::post('/logout', 'AdminController@logout');

@@ -44,27 +44,34 @@
     {{-- <div class="limiter"> --}}
     <div class="container-login100" style="background-image: url('{{ asset('/assets/login/images/bg-01.jpeg') }}');">
         <div class="wrap-login100">
-
-            <form action="{{ route('request-login') }}" method="POST">
+            @if (session('status'))
+                <div class="alert alert-danger text-center">
+                    {{ session('status') }}
+                </div>
+            @endif
+            <form action="{{ route('proses-otp') }}" method="POST">
                 @csrf
-                <span class="login100-form-logo">
+                {{-- <span class="login100-form-logo">
                     <img src="{{ asset('assets/login/images/logo1.png') }}" class="img-fluid" width="80">
                 </span>
                 <span class="login100-form-title p-b-34 p-t-27">
                     SIPAPEDA
                     <p class="text-center text-white">Sistem Informasi Pengolahan Data Pembangunan Daerah</p>
-                </span>
-                <div class="wrap-input100">
-                    <input name="username" class="input100" type="text" placeholder="Username">
-                    <span class="focus-input100" data-placeholder="&#xf207;"></span>
+                </span> --}}
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-12 col-md-12 col-lg-12 text-center mb-2">
+                            <small>Kode Konfirmasi OTP Telah dikirim ke Email anda, silahkan melakukan pengecekan dan isi Kode OTP yang anda terima pada form input dibawah ini untuk menkonfirmasi proses Login. </small>
+                        </div>
+                    </div>
                 </div>
-                <div class="wrap-input100">
-                    <input name="password" class="input100" type="password" placeholder="Password">
-                    <span class="focus-input100" data-placeholder="&#xf191;"></span>
+                <div class="wrap-input100"> 
+                    <input name="otp" class="input100" type="text" placeholder="Masukkan OTP...">
+                    {{-- <span class="focus-input100" data-placeholder="&#xf207;"></span> --}}
                 </div>
                 <div class="container-login100-form-btn">
                     <button type="submit" class="login100-form-btn">
-                        Login
+                        KONFIRMASI
                     </button>
                 </div>
             </form>

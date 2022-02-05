@@ -23,6 +23,8 @@ use App\Luastanamsatu;
 use App\Datacagarbudaya;
 use App\Dataperdagangan;
 use RealRashid\SweetAlert\Facades\Alert;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception; 
 
 class AdminController extends Controller
 {
@@ -146,16 +148,111 @@ class AdminController extends Controller
         $data_kesehatan->save();
         return redirect('/admin/data/input-data-fasilitas-kesehatan');
     }
-    public function logout(Request $request)
-    {
-        // Alert::question('Yakin ingin Keluar?');
+    public function logout(Request $request) {
         $request->session()->flush();
         return redirect('/');
     }
-    public function postlogin(Request $request)
+
+    public function halaman_verifikasi()
     {
-        $data_login = Login::where('username', $request->username)->firstOrFail();
-        $cek_password = Hash::check($request->password, $data_login->password);
+        return view('admin.request-email');
+    }
+
+    public function request_login(Request $request)
+    {
+        $username = $request->username;
+        $password = $request->password;
+        $otp = strtoupper(Str::random(10));
+        // dd($otp);
+        $fetch_login = Login::where('username', $username)->first();
+        // dd($fetch_login);
+        $logindata = [
+            'username' => $username,
+            'password' => $password,
+            'email' => $fetch_login->email,
+            'otp' => $otp,
+        ];
+        session(['logindata' => $logindata]);
+        $sessionAktif = session('logindata');
+
+
+        $mail_username  = "siakadtk123@gmail.com";
+        $mail_password  = "Fathur160199Seven";
+        // $mail_send  = $pengguna->login_email;
+        // $mail_send  = "fathurwalkers44@gmail.com";
+        $email = $fetch_login->email;
+        $mail_send  = $email;
+
+        try {
+            $mail = new PHPMailer(); // create a new object
+            $mail->IsSMTP(true); // enable SMTP
+            // $mail->IsMAIL(); // enable SMTP
+            $mail->SMTPDebug = 1;
+            $mail->Debugoutput = 'html';
+            $mail->SMTPAuth = true; // authentication enabled
+            $mail->SMTPSecure = 'ssl'; // secure transfer enabled REQUIRED for Gmail
+            $mail->Host = "smtp.gmail.com";
+            $mail->Port = 465; // or 587 / 465
+            // $mail->SMTPSecure = 'tls'; // secure transfer enabled REQUIRED for Gmail
+            // $mail->Host = "smtp.gmail.com";
+            // $mail->Port = 587; // or 587
+            $mail->Username = $mail_username;
+            $mail->Password = $mail_password;
+
+            // $mail = new PHPMailer(true);
+            // $mail->isSMTP();
+            // $mail->SMTPDebug = 2;
+            // $mail->Debugoutput = 'html';
+            // $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            // $mail->Host = 'smtp.gmail.com';
+            // $mail->Port = 587;
+            // // $mail->Port = 465;
+            // $mail->SMTPSecure = 'tls';
+            // $mail->SMTPAuth = true;
+            // $mail->Username = env('MAIL_USERNAME');
+            // $mail->Password = env('MAIL_PASSWORD');
+
+    
+            // $mail->addAddress($pengguna->login_email, "VERIFIKASI SKCK");
+            // $mail->addAddress("fathurwalkers44@gmail.com", "BEM Teknik Unidayan");
+
+            $mail->setFrom($mail_username, "Verifikasi OTP Sipapeda");
+            $mail->addAddress($mail_send);
+
+            $mail->isHTML(true);
+            $mail->Subject = "Verifikasi OTP Login";
+            $mail->Body = "Silahkan masukkan kode otp ini untuk menkonfirmasi tindakan login pada aplikasi SIPAPEDA<br>";
+            $mail->Body .= "Kode OTP Anda : ";
+            $mail->Body .= $otp;
+            $mail->Body .= "<br>";
+    
+            $mail->send();
+            return redirect()->route('halaman-verifikasi');
+        } catch (Exception $e) {
+            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        }
+
+
+        // return redirect()->route('halaman-verifikasi'); 
+        // return redi('admin.request-email'); 
+    }
+
+    public function proses_otp(Request $request)
+    {
+        $otpcek = $request->otp;
+        $otpsession = session('logindata');
+        if($otpcek == $otpsession['otp']) {
+            return redirect()->route('post-login');
+        } else {
+            return redirect()->back()->with('status', 'KODE OTP SALAH!');
+        }
+    }
+
+    public function postlogin()
+    {
+        $logindata = session('logindata');
+        $data_login = Login::where('username', $logindata['username'])->firstOrFail();
+        $cek_password = Hash::check($logindata['password'], $data_login->password);
         $cek_level = $data_login->level;
         if ($data_login) {
             if ($cek_password) {
